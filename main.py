@@ -1,14 +1,13 @@
 import praw
 import requests
+import configparser
 from time import sleep
 
-from os import remove, path, environ
+from os import remove, path
 from instagrapi import Client
 
 from modules.media_type import *
 from modules.sanitize_media import gif_to_mp4, convert_img_to_jpg
-
-from dotenv import load_dotenv
 
 posts_list = []
 
@@ -47,20 +46,24 @@ def upload_reddit_post_to_ig(title, id, image_url):
             ig_profile.video_upload(image_path, caption)
         case MediaType.VIDEO:
             ig_profile.video_upload(image_path, caption)
+    
+    remove(image_path)
 
     return True
 
 
 if __name__ == '__main__':
-    load_dotenv()
+    # This is where we store config data. Login credentials, subreddits, etc...
+    config = configparser.ConfigParser()
+    config.read("config.ini")
 
     # Logging into our Instagram Account.
-    ig_profile.login(username=environ.get("ENV_IG_USERNAME"), password=environ.get("ENV_IG_PASSWORD"))
+    ig_profile.login(config["instagram"]["username"], config["instagram"]["password"])
 
     # Setting up an instance of our Reddit Application
     reddit = praw.Reddit(
-        client_id = environ.get("ENV_REDDIT_CLIENT_ID"), 
-        client_secret = environ.get("ENV_REDDIT_CLIENT_SECRET"),
+        client_id = config["reddit"]["client_id"], 
+        client_secret = config["reddit"]["client_secret"],
         user_agent = "MemeParserBot/0.1 by Zabaniya001"
     )
 
@@ -76,7 +79,7 @@ if __name__ == '__main__':
     posts_list = posts_list_file.read().split(",")
     posts_list_file.seek(buffer_position)
 
-    subreddits = ["memes", "dankmemes"]
+    subreddits = ["memes", "dankmemes", "videomemes", "wholesomememes", "Memes_Of_The_Dank", "darksoulsmemes", "surrealmemes", "dankvideos", "okbuddyretard"]
 
     while True:
         for item in subreddits:
@@ -114,4 +117,4 @@ if __name__ == '__main__':
 
                 # We make it wait X time before making a new post.
                 sleep(10)
-            sleep(3600) # 1 Hour
+            sleep(1800) # 30 minutes
